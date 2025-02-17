@@ -1,0 +1,12 @@
+2025-02-12 18:58:37|INFO|Starting the processing with the following steps: ['bvc_hist', 'bvc_daily']
+2025-02-12 18:58:37|INFO|Calling the function run with args: (), kwargs: {}
+2025-02-12 18:58:37|INFO|bvc hist process
+2025-02-12 18:58:37|INFO|Calling the function move_landing_to_raw with args: (), kwargs: {}
+2025-02-12 18:58:38|INFO|writing to path: data/raw/hist/data.parquet
+2025-02-12 18:58:38|INFO|Function move_landing_to_raw Execution time: 103.582 ms
+2025-02-12 18:58:38|INFO|Pbvc hist has finished successful
+2025-02-12 18:58:38|INFO|Function run Execution time: 104.505 ms
+2025-02-12 18:58:38|INFO|Calling the function run with args: (), kwargs: {}
+2025-02-12 18:58:38|INFO|bvc daily process
+2025-02-12 18:58:38|INFO|Function run Execution time: 0.234 ms
+2025-02-12 18:58:38|INFO|The process has finalized
