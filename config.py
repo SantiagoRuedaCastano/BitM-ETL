@@ -4,7 +4,7 @@ from pathlib import Path
 from dynaconf import Dynaconf
 
 setting_file = os.environ.get(
-    "SETTINGS", Path(__file__).parent / "settings.json"
+    "SETTINGS", Path(__file__).parent / "settings.yaml"
 )
 
 
