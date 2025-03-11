@@ -6,3 +6,4 @@ logger = Logger.setup_logger()
 @measure_performance
 def run():
     logger.info("bvc daily process")
+    io.fix_header(settings.data.landing.bvc_daily.path)
