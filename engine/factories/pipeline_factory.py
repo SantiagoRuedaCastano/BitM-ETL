@@ -1,6 +1,6 @@
 from typing import Callable, Any
 
-from pipelines import bvc_hist, bvc_daily
+from pipelines import bvc_daily
 
 
 def get_pipeline(pipeline_name: str) -> Callable[..., Any]:
