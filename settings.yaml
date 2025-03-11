@@ -10,8 +10,8 @@ default:
       format: "{time:YYYY-MM-DD HH:mm:ss}|{level}|{message}"
   data:
     landing:
-      bvc_hist:
-        path: data/landing/hist/
+      bvc_daily:
+        path: data/landing/daily/
         ext: csv
     processed:
       bvc_hist:
@@ -23,5 +23,4 @@ default:
         ext: parquet
   engine:
     steps:
-      - bvc_hist
       - bvc_daily
