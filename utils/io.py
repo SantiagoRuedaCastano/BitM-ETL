@@ -1,6 +1,7 @@
 import os
 from utils.logging_utils import Logger
 import csv
+from returns.maybe import Maybe, Success, Nothing
 
 logger = Logger.setup_logger()
 
@@ -10,22 +11,27 @@ def get_files(path, extension):
     # Filter only CSV files
     return [file for file in files if file.endswith(f'.{extension}')]
 
-def fix_header(input_file) -> bool:
 
-    logger.info(input_file)
+def fix_header(input_file) -> Maybe[Path]:
 
-    # Open the input file and read the content
-    with open(input_file, mode='r', newline='', encoding='utf-8') as infile:
-        reader = csv.reader(infile)
-        rows = list(reader)
+    try:
+        logger.info(f'Processing file: {input_file})
 
-    # Modify the header (first line)
-    header = rows[0]
-    header = [column.replace("Emisor / nombre", "Emisor;Equity") for column in header]
+        # Open the input file and read the content
+        with open(input_file, mode='r', newline='', encoding='utf-8') as infile:
+            reader = csv.reader(infile)
+            rows = list(reader)
 
-    # Write the modified content to the output file without adding extra quotes
-    with open(input_file, mode='w', newline='', encoding='utf-8') as outfile:
-        writer = csv.writer(outfile, quoting=csv.QUOTE_NONE)
-        writer.writerows([header] + rows[1:])  # Write the modified header followed by the rest of the data
+        # Modify the header (first line)
+        header = rows[0]
+        header = [column.replace("Emisor / nombre", "Emisor;Equity") for column in header]
 
+        # Write the modified content to the output file without adding extra quotes
+        with open(input_file, mode='w', newline='', encoding='utf-8') as outfile:
+            writer = csv.writer(outfile, quoting=csv.QUOTE_NONE)
+            writer.writerows([header] + rows[1:])  # Write the modified header followed by the rest of the data
+        
+        return Success[input_file]
+    except:
+        Nothing
 

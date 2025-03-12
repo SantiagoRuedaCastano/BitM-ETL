@@ -4,15 +4,13 @@ from utils.io import *
 import functools
 from config import settings
 from pathlib import Path
+from returns.maybe import Maybe, Some, Nothing
 
 logger = Logger.setup_logger()
 
-def fix_files(path, ext):
-    for file in get_files(path, ext):
-        fix_header(Path(path) / file)
+def fix_files(path, ext) -> List[Maybe[Path]]:
+    return List(map(lambda file: fix_header(Path(path) / file), get_files(path, ext)))
 
-    logger.info(f'done...')
-    
 
 @measure_performance
 def run():
