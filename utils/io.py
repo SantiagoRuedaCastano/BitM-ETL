@@ -1,7 +1,7 @@
 import os
 from utils.logging_utils import Logger
 import csv
-from returns.maybe import Maybe, Success, Nothing
+from returns.io import IO, IOSuccess, IOFailure, IOResult
 
 logger = Logger.setup_logger()
 
@@ -12,26 +12,27 @@ def get_files(path, extension):
     return [file for file in files if file.endswith(f'.{extension}')]
 
 
-def fix_header(input_file) -> Maybe[Path]:
-
+def read_csv_file(input_file) -> IOResult[str, str]:
     try:
-        logger.info(f'Processing file: {input_file})
-
         # Open the input file and read the content
-        with open(input_file, mode='r', newline='', encoding='utf-8') as infile:
-            reader = csv.reader(infile)
-            rows = list(reader)
+        with open(input_file, mode='r', newline='', encoding='utf-8') as f:
+            return IOSuccess(f.read())
+    except IOError as e:
+        return IOFailure(input_file)
+            
 
-        # Modify the header (first line)
-        header = rows[0]
-        header = [column.replace("Emisor / nombre", "Emisor;Equity") for column in header]
-
+def write_csv_file(output_file) -> IOResult[str, str]:
+    try:
         # Write the modified content to the output file without adding extra quotes
         with open(input_file, mode='w', newline='', encoding='utf-8') as outfile:
             writer = csv.writer(outfile, quoting=csv.QUOTE_NONE)
-            writer.writerows([header] + rows[1:])  # Write the modified header followed by the rest of the data
-        
-        return Success[input_file]
-    except:
-        Nothing
+            writer.writerows([header] + rows[1:]) 
+            
+        return IOSuccess[output_file]
+    except IOError as e:
+        return IOFailure(output_file)
 
+
+
+def fix_header(input_file) -> IOResult[str, str] :
+    return read_csv_file(input_file).map(write_csv_file)
