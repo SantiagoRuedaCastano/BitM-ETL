@@ -11,28 +11,31 @@ def get_files(path, extension):
     # Filter only CSV files
     return [file for file in files if file.endswith(f'.{extension}')]
 
-
-def read_csv_file(input_file) -> IOResult[str, str]:
+def read_csv_file(input_file:str) -> IOResult[str, str]:
     try:
         # Open the input file and read the content
         with open(input_file, mode='r', newline='', encoding='utf-8') as f:
             return IOSuccess(f.read())
     except IOError as e:
         return IOFailure(input_file)
-            
 
-def write_csv_file(output_file) -> IOResult[str, str]:
+def write_csv_file(lines:str, file_path:str) -> IOResult[str, str]:
     try:
-        # Write the modified content to the output file without adding extra quotes
-        with open(input_file, mode='w', newline='', encoding='utf-8') as outfile:
-            writer = csv.writer(outfile, quoting=csv.QUOTE_NONE)
-            writer.writerows([header] + rows[1:]) 
+        with open(file_path, mode='w', newline='', encoding='utf-8') as f:
+            f.write(lines)
             
-        return IOSuccess[output_file]
+        return IOSuccess(file_path)
     except IOError as e:
-        return IOFailure(output_file)
+        return IOFailure(file_path)
+
+def fix_header(lines:str) -> str:
+    return lines.map(lambda line: line.replace(';EQTY', ''))
 
 
-
-def fix_header(input_file) -> IOResult[str, str] :
-    return read_csv_file(input_file).map(write_csv_file)
+def fix_csv_file(input_file, output_file) -> IOResult[str, str]:
+    match read_csv_file(input_file):
+        case IOSuccess(value):
+            return write_csv_file(fix_header(value).unwrap(), output_file)
+        case IOFailure(value):
+            return IOFailure(value)
+        
