@@ -36,6 +36,6 @@ def fix_csv_file(input_file, output_file) -> IOResult[str, str]:
     match read_csv_file(input_file):
         case IOSuccess(value):
             return write_csv_file(fix_header(value).unwrap(), output_file)
-        case IOFailure(value):
-            return IOFailure(value)
+        case _:
+            return _
         

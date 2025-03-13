@@ -4,12 +4,18 @@ from utils.io import *
 import functools
 from config import settings
 from pathlib import Path
-from returns.maybe import Maybe, Some, Nothing
+from returns.io import IO, IOSuccess, IOFailure, IOResult
 
 logger = Logger.setup_logger()
 
-def fix_files(path, ext) -> List[Maybe[Path]]:
-    return List(map(lambda file: fix_header(Path(path) / file), get_files(path, ext)))
+def fix_files(path, ext):
+    for file in get_files(path, ext):
+        path_file = Path(path) / file
+        match fix_csv_file(path_file, path_file):
+            case IOSuccess(value):
+                logger.info(f'File {value} was processed')
+            case IOFailure(value):
+                logger.error(f'Error processing File {value}')
 
 
 @measure_performance
