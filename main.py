@@ -1,11 +1,11 @@
-from engine.orchestrators import app_orchestrator
 from utils.logging_utils import Logger
+from pipelines import bvc_daily
 
 logger = Logger.setup_logger()
 
 
 def main():
-    app_orchestrator.run()
+    bvc_daily.run()
 
 
 if __name__ == "__main__":
