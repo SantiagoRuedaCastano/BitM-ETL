@@ -1,5 +1,5 @@
-from utils.logging_utils import Logger
 from pipelines import bvc_daily
+from utils.logging_utils import Logger
 
 logger = Logger.setup_logger()
 

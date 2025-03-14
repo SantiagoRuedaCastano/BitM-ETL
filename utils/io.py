@@ -1,7 +1,9 @@
 import os
+
+from returns.io import IOSuccess, IOFailure, IOResult
+from returns.result import Result
+
 from utils.logging_utils import Logger
-import csv
-from returns.io import IO, IOSuccess, IOFailure, IOResult
 
 logger = Logger.setup_logger()
 
@@ -32,10 +34,10 @@ def fix_header(lines:str) -> str:
     return lines.map(lambda line: line.replace(';EQTY', ''))
 
 
-def fix_csv_file(input_file, output_file) -> IOResult[str, str]:
+def fix_csv_file(input_file, output_file) -> Result[str, str]:
     match read_csv_file(input_file):
         case IOSuccess(value):
             return write_csv_file(fix_header(value).unwrap(), output_file)
-        case _:
-            return _
+        case IOFailure(value):
+            return IOFailure(value)
         
