@@ -12,12 +12,12 @@ default:
     landing:
       bvc_daily:
         path: data/landing/daily/
+        path_processed: data/landing/daily/processed
         ext: csv
         table: BitM.landing.bvc_daily
     bronze:
-      bvc_hist:
-        path: data/processed/hist/
-        ext: csv
+      bvc_daily:
+        table: BitM.bronze.bvc_daily
     raw:
       bvc_hist:
         path: data/raw/hist/data.parquet
