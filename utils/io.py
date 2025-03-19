@@ -1,5 +1,5 @@
 import os
-
+import shutil
 from returns.io import IOSuccess, IOFailure, IOResult
 from returns.result import Result
 
@@ -37,4 +37,11 @@ def fix_header(lines:str) -> str:
 
 def fix_csv_file(input_file, output_file) -> Result[str, ErrorInfo]:
     return read_csv_file(input_file).bind(lambda value:  write_csv_file(fix_header(value), output_file))
-        
+
+def move_file(input_file, output_file) -> IOResult[bool, ErrorInfo]:
+    try:
+        logger.debug(f'moving file....input_file: {input_file}. output_file: {output_file}')
+        shutil.move(input_file, output_file)
+        return IOSuccess(True)
+    except Exception as e:
+        return IOFailure(ErrorInfo(ErrorType.ERROR_MOVING_FILE, e))

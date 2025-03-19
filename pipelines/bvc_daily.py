@@ -12,6 +12,9 @@ from pathlib import Path
 logger = Logger.setup_logger()
 conn = DB.setup_db()
 
+
+
+
 @measure_performance
 def load(file_path) -> Result[str, ErrorInfo]:
     try:
@@ -35,8 +38,9 @@ def extract(path_file) -> Result[str, ErrorInfo]:
 
 
 @measure_performance
-def transform(table:str) -> Result[str, str]:
+def transform(src:str) -> Result[str, ErrorInfo]:
     try:
+        table = settings.data.bronze.bvc_daily.table
 
         conn.query(
             f"""
@@ -49,17 +53,28 @@ def transform(table:str) -> Result[str, str]:
                 "Precio máximo" AS High,
                 "Precio mínimo" AS Low,
                 "Último precio" AS Close
-            FROM {table};
+            FROM {src};
             """
         )
         return Success(table)
     except Exception as e:
-        return Failure(str(e))
+        return Failure(ErrorInfo(ErrorType.ERROR_TRANSFORMING_DATA, e))
 
 @measure_performance
 def run():
     logger.info("bvc daily process")
     dir_path = settings.data.landing.bvc_daily.path
+    processed_path = settings.data.landing.bvc_daily.path_processed
     for file in get_files(dir_path, settings.data.landing.bvc_daily.ext):
-        logger.info(extract(Path(dir_path, file)).bind(load))
+        input_file = Path(dir_path, file)
+        output_file = Path(processed_path, file)
+        logger.info(extract(input_file).bind(load).bind(transform))
+
+        match move_file(input_file, output_file):
+            case IOSuccess(_):
+                logger.info(f'File has been processed successfully: {input_file}')
+            case IOFailure(value):
+                logger.error(value)
+        
+
    
