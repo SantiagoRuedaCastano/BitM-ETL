@@ -8,15 +8,31 @@ from utils.io import *
 from utils.performance import measure_performance
 from core.error_context import ErrorType, ErrorInfo
 from pathlib import Path
+import re
 
 logger = Logger.setup_logger()
 conn = DB.setup_db()
 
 
+def extract_date_from_file_name(file_name):
+    
+    # Regular expression pattern
+    pattern = r'RVLocal_(\d{4})(\d{2})(\d{2})\.csv'
+    
+    # Search for the pattern in the string
+    match = re.search(pattern, file_name)
+    
+    # Extract the matched groups
+    if match:
+        year = match.group(1)
+        month = match.group(2)
+        day = match.group(3)
+        return f"{year}-{month}-{day}"
 
+    return '1970-01-01'    
 
 @measure_performance
-def load(file_path) -> Result[str, ErrorInfo]:
+def load(file_path, date_str) -> Result[str, ErrorInfo]:
     try:
         logger.info('Loading the file into landing stage')
         table = settings.data.landing.bvc_daily.table
@@ -24,6 +40,7 @@ def load(file_path) -> Result[str, ErrorInfo]:
             f"""
             CREATE OR REPLACE TABLE {table} AS
             SELECT 
+            '{date_str}'::DATE as Date,
             *
             FROM read_csv('{file_path}', delim = ';', header = true);
             """
@@ -46,6 +63,7 @@ def transform(src:str) -> Result[str, ErrorInfo]:
             f"""
             CREATE OR REPLACE TABLE {table} AS
             SELECT
+                Date,
                 "Nemotécnico" AS Stock,
                 "Volúmenes" AS Vol,
                 Cantidad AS Qty,
@@ -68,7 +86,9 @@ def run():
     for file in get_files(dir_path, settings.data.landing.bvc_daily.ext):
         input_file = Path(dir_path, file)
         output_file = Path(processed_path, file)
-        logger.info(extract(input_file).bind(load).bind(transform))
+        date_str = extract_date_from_file_name(file)
+
+        logger.info(extract(input_file).bind(lambda filepath: load(filepath, date_str)).bind(transform))
 
         match move_file(input_file, output_file):
             case IOSuccess(_):
