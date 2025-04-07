@@ -40,8 +40,9 @@ def load(file_path, date_str) -> Result[str, ErrorInfo]:
             f"""
             CREATE OR REPLACE TABLE {table} AS
             SELECT 
-            '{date_str}'::DATE as Date,
-            *
+                '{date_str}'::DATE as Date,
+                *,
+                CURRENT_LOCALTIMESTAMP() AS UPDATED_AT
             FROM read_csv('{file_path}', delim = ';', header = true);
             """
         )
@@ -55,22 +56,23 @@ def extract(path_file) -> Result[str, ErrorInfo]:
 
 
 @measure_performance
-def transform(src:str) -> Result[str, ErrorInfo]:
+def transform(src:str, date_str) -> Result[str, ErrorInfo]:
     try:
         table = settings.data.bronze.bvc_daily.table
 
         conn.query(
             f"""
-            CREATE OR REPLACE TABLE {table} AS
+            INSERT INTO TABLE {table}
             SELECT
-                Date,
-                "Nemotécnico" AS Stock,
-                "Volúmenes" AS Vol,
-                Cantidad AS Qty,
-                "Precio apertura" AS Open,
-                "Precio máximo" AS High,
-                "Precio mínimo" AS Low,
-                "Último precio" AS Close
+                DATE,
+                "Nemotécnico" AS STOCK,
+                "Volúmenes" AS VOL,
+                Cantidad AS QTY,
+                "Precio apertura" AS OPEN,
+                "Precio máximo" AS HIGH,
+                "Precio mínimo" AS LOW,
+                "Último precio" AS CLOSE,
+                UPDATED_AT
             FROM {src};
             """
         )
@@ -88,7 +90,9 @@ def run():
         output_file = Path(processed_path, file)
         date_str = extract_date_from_file_name(file)
 
-        logger.info(extract(input_file).bind(lambda filepath: load(filepath, date_str)).bind(transform))
+        logger.info(extract(input_file)
+            .bind(lambda filepath: load(filepath, date_str))
+            .bind(lambda table: transform(table, date_str)))
 
         match move_file(input_file, output_file):
             case IOSuccess(_):
