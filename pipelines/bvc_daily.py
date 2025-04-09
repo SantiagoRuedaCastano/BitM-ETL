@@ -60,9 +60,8 @@ def transform(src:str, date_str) -> Result[str, ErrorInfo]:
     try:
         table = settings.data.bronze.bvc_daily.table
 
-        conn.query(
-            f"""
-            INSERT INTO TABLE {table}
+        query = f"""
+            INSERT INTO {table}(DATE, STOCK, VOL, QTY, OPEN, HIGH, LOW, CLOSE, UPDATED_AT)
             SELECT
                 DATE,
                 "Nemotécnico" AS STOCK,
@@ -74,8 +73,10 @@ def transform(src:str, date_str) -> Result[str, ErrorInfo]:
                 "Último precio" AS CLOSE,
                 UPDATED_AT
             FROM {src};
-            """
-        )
+            """     
+
+        logger.debug(f'query: {query}')
+        conn.query(query)
         return Success(table)
     except Exception as e:
         return Failure(ErrorInfo(ErrorType.ERROR_TRANSFORMING_DATA, e))
@@ -90,14 +91,13 @@ def run():
         output_file = Path(processed_path, file)
         date_str = extract_date_from_file_name(file)
 
-        logger.info(extract(input_file)
-            .bind(lambda filepath: load(filepath, date_str))
-            .bind(lambda table: transform(table, date_str)))
+        res = extract(input_file).bind(lambda filepath: load(filepath, date_str)).bind(lambda table: transform(table, date_str))
 
-        match move_file(input_file, output_file):
-            case IOSuccess(_):
+        match res:
+            case Success(_):
+                move_file(input_file, output_file)
                 logger.info(f'File has been processed successfully: {input_file}')
-            case IOFailure(value):
+            case Failure(value):
                 logger.error(value)
         
 

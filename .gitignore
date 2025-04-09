@@ -172,3 +172,4 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 *db.wal
+data/landing/daily/processed/
