@@ -19,7 +19,8 @@ class Logger:
 
         logger.add(sink=eval(settings.logging.info.sink),
                    level=settings.logging.info.level,
-                   format=settings.logging.info.format)  # Log to stderr with ERROR level
+                   format=settings.logging.info.format,
+                   colorize=True)  # Log to sys.stdout with INFO level
 
         return logger
 
